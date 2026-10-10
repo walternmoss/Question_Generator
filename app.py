@@ -11,11 +11,13 @@ st.set_page_config(
 st.title("📚 ISU AI Assessment & Tagged Question Bank Generator")
 st.markdown("Upload lecture slide decks or study guides to generate granular, difficulty-tagged question banks for automated Socratic AI ingestion.")
 
+# Sidebar Configurations
 st.sidebar.header("Configuration Panel")
-api_key_input = st.sidebar.text_input("Gemini API Key", type="password", help="Enter your personal Gemini API key if not set via environment variables.")
+api_key_input = st.sidebar.text_input("Gemini API Key", type="password", help="Optional override if not defined in Streamlit secrets.")
 
 st.markdown("---")
 
+# Main Interface Fields supporting batch upload
 uploaded_files = st.file_uploader(
     "1. Upload Source Documents (Queue multiple PDF, PPTX, TXT, MD files)",
     type=["pdf", "pptx", "txt", "md"],
