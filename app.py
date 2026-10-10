@@ -8,8 +8,8 @@ st.set_page_config(
     layout="centered"
 )
 
-st.title("📚 ISU AI Assessment & Tagged Question Bank Generator")
-st.markdown("Upload lecture slide decks or study guides to generate granular, difficulty-tagged question banks for automated Socratic AI ingestion.")
+st.title("📚 ISU AI Question Bank Generator")
+st.markdown("Upload lecture slide decks or study guides to generate granular, difficulty-tagged question banks.")
 
 # Sidebar Configurations
 st.sidebar.header("Configuration Panel")
