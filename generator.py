@@ -1,4 +1,5 @@
 import os
+import streamlit as st
 from google import genai
 from google.genai import types
 import pypdf
@@ -6,9 +7,23 @@ from pptx import Presentation
 import io
 import zipfile
 
+def get_api_key() -> str:
+    """Retrieves API key from environment variables or Streamlit secrets."""
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        try:
+            api_key = st.secrets["GEMINI_API_KEY"]
+        except Exception:
+            pass
+    if not api_key:
+        raise ValueError("GEMINI_API_KEY is missing from environment variables and Streamlit secrets.")
+    return api_key
+
 def extract_text_from_file(uploaded_file) -> str:
+    """Extracts text content based on file extension."""
     filename = uploaded_file.name.lower()
     content = ""
+    
     if filename.endswith(".pdf"):
         reader = pypdf.PdfReader(uploaded_file)
         for page in reader.pages:
@@ -26,6 +41,7 @@ def extract_text_from_file(uploaded_file) -> str:
         content = uploaded_file.getvalue().decode("utf-8")
     else:
         content = uploaded_file.getvalue().decode("utf-8", errors="ignore")
+        
     return content
 
 def generate_single_assessment(
@@ -38,10 +54,8 @@ def generate_single_assessment(
     include_answer_key: bool,
     output_format: str
 ) -> str:
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise ValueError("GEMINI_API_KEY environment variable is missing.")
-        
+    """Invokes Gemini API for a single source text with granular difficulty tiers and tagging."""
+    api_key = get_api_key()
     client = genai.Client(api_key=api_key)
     
     total_questions = easy_count + med_count + hard_count
@@ -65,7 +79,7 @@ def generate_single_assessment(
     
     prompt = f"""
     You are an expert academic assessment designer and university professor. 
-    Analyze the following source document thoroughly and match its academic level and technical rigor.
+    Analyze the following source document thoroughly. Automatically detect and match the academic level, technical rigor, and domain expertise present in the source text.
 
     SOURCE MATERIAL:
     """ + source_text[:30000] + f"""
@@ -104,6 +118,7 @@ def generate_batch_assessments(
     output_format: str,
     progress_callback=None
 ) -> bytes:
+    """Processes a queue of uploaded files and returns an in-memory ZIP archive of results."""
     zip_buffer = io.BytesIO()
     
     if output_format == "Structured XML (.xml)":
